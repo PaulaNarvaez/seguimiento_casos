@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Seguimiento de Casos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Seguimiento de Casos</h1>
+
+      <!-- Formulario de alta -->
+      <div class="toolbar">
+        <input id="titulo" type="text" placeholder="Título del caso *">
+        <input id="categoria" type="text" placeholder="Categoría (p. ej. Soporte, Ventas)">
+        <select id="escalado">
+          <option value="no">Escalado: No</option>
+          <option value="si">Escalado: Sí</option>
+        </select>
+        <select id="estado" title="Si eliges Escalado, aplica SLA de 2h">
+          <option value="Pendiente">Estado: Pendiente</option>
+          <option value="Escalado">Estado: Escalado</option>
+          <option value="OK">Estado: OK</option>
+        </select>
+        <input id="notas" type="text" placeholder="Notas">
+        <button id="btnAdd" class="btn-accent">Agregar</button>
+      </div>
+
+      <hr class="sep">
+
+      <!-- Filtros -->
+      <div class="toolbar">
+        <input id="q" type="text" placeholder="Buscar por texto...">
+        <select id="fCategoria"><option value="Todas">Todas las categorías</option></select>
+        <select id="fEstado">
+          <option>Todos</option>
+          <option>Pendiente</option>
+          <option>Escalado</option>
+          <option>OK</option>
+        </select>
+        <select id="fEscalado">
+          <option>Todos</option>
+          <option>Si</option>
+          <option>No</option>
+        </select>
+        <button id="btnReset">Limpiar filtros</button>
+        <a class="link" href="./history.html">Ver historial »</a>
+      </div>
+
+      <!-- Cabecera -->
+      <div class="thead">
+        <div>#</div>
+        <div>Caso</div>
+        <div>Categoría</div>
+        <div>Escalado</div>
+        <div>Notas</div>
+        <div>Actualizado</div>
+        <div>Acciones</div>
+        <div>Estado</div>
+      </div>
+      <div id="rows"></div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Historial de Cambios</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Historial de Cambios</h1>
+
+      <div class="toolbar">
+        <input id="q" type="text" placeholder="Buscar por ID de caso o texto...">
+        <button id="btnReload">Recargar</button>
+        <a class="link" href="./index.html">« Volver a casos</a>
+      </div>
+
+      <div class="thead" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+        <div>Fecha</div>
+        <div>Acción</div>
+        <div>Case ID</div>
+        <div>Detalle</div>
+      </div>
+      <div id="rows" style="display: grid; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const API = (p) => `/api${p}`;
+    const $ = (s)=>document.querySelector(s);
+
+    function fmtDate(iso){ const d = new Date(iso); return d.toLocaleString(); }
+    function stringify(obj){ try { return JSON.stringify(obj, null, 2); } catch { return String(obj); } }
+
+    async function loadHistory(){
+      const q = $('#q').value.trim().toLowerCase();
+      const res = await fetch(API('/history'));
+      let data = await res.json();
+
+      if (q){
+        data = data.filter(h =>
+          (h.caseId || '').toLowerCase().includes(q) ||
+          (h.action || '').toLowerCase().includes(q) ||
+          stringify(h.before).toLowerCase().includes(q) ||
+          stringify(h.after).toLowerCase().includes(q)
+        );
+      }
+
+      const container = $('#rows');
+      container.innerHTML = '';
+      data.forEach(h=>{
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.style.gridTemplateColumns = '1fr 1fr 1fr 1fr';
+        row.innerHTML = `
+          <div class="td">${fmtDate(h.timestamp)}</div>
+          <div class="td"><span class="badge">${h.action}</span></div>
+          <div class="td"><code>${h.caseId}</code></div>
+          <div class="td">
+            <details>
+              <summary>Ver cambios</summary>
+              <pre style="white-space:pre-wrap;font-size:12px;margin-top:8px"><strong>Antes:</strong>\n${stringify(h.before)}</pre>
+              <pre style="white-space:pre-wrap;font-size:12px;margin-top:8px"><strong>Después:</strong>\n${stringify(h.after)}</pre>
+            </details>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    $('#btnReload').addEventListener('click', loadHistory);
+    $('#q').addEventListener('input', loadHistory);
+    loadHistory();
+  </script>
+</body>
+</html>
