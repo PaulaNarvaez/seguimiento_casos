@@ -1,4 +1,4 @@
-// app.js - UI con SLA 2h y precedencia correcta: ESTADO manda
+// app.js - UI con SLA 2h, estado editable y precedencia correcta (ESTADO manda)
 const API = (p) => `/api${p}`;
 const $ = (s)=>document.querySelector(s);
 const rows = $('#rows');
@@ -113,7 +113,6 @@ async function actualizar(id){
   const inputs = rows.querySelectorAll(`[data-id="${id}"]`);
   const payload = {};
   let estadoElegido = null;
-  let escaladoValor = null;
 
   inputs.forEach(el=>{
     const k = el.getAttribute('data-k');
@@ -121,8 +120,7 @@ async function actualizar(id){
       estadoElegido = el.value;                // Pendiente | Escalado | OK
       payload.estado = estadoElegido;
     } else if (k === 'escalado') {
-      escaladoValor = el.value;                // si | no (solo para sincronía)
-      payload.escalado = (el.value === 'si');  // boolean
+      payload.escalado = (el.value === 'si');  // boolean para sincronía
     } else {
       payload[k] = el.value;
     }
@@ -133,8 +131,8 @@ async function actualizar(id){
     payload.escalado = true;          // inicia/reinicia SLA
     payload.estado = 'Escalado';
   } else if (estadoElegido === 'OK' || estadoElegido === 'Pendiente') {
-    payload.escalado = false;         // desescalar cuando se sale de Escalado
-    payload.estado = estadoElegido;   // OK o Pendiente
+    payload.escalado = false;         // salir de Escalado apaga SLA
+    payload.estado = estadoElegido;
   } else {
     // Si no eligió estado pero puso escalado = sí, escalamos
     if (payload.escalado) payload.estado = 'Escalado';
