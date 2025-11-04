@@ -152,6 +152,11 @@ class GestorCasos:
             return
         
         try:
+            # Check file size (limit to 10MB)
+            if self.archivo_datos.stat().st_size > 10 * 1024 * 1024:
+                print(f"Advertencia: Archivo de casos muy grande (>10MB). No se cargará.")
+                return
+            
             with open(self.archivo_datos, 'r', encoding='utf-8') as f:
                 datos = json.load(f)
             
@@ -171,6 +176,6 @@ class GestorCasos:
                 if caso.id >= self.siguiente_id:
                     self.siguiente_id = caso.id + 1
         except (json.JSONDecodeError, KeyError, ValueError) as e:
-            print(f"Error al cargar casos: {e}")
+            print(f"Advertencia: Error al cargar casos - {e}. Iniciando con datos vacíos.")
             self.casos = {}
             self.siguiente_id = 1

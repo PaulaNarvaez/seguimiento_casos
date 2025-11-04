@@ -137,7 +137,7 @@ python -m unittest test_seguimiento.py -v
 - **baja**: Prioridad baja
 - **media**: Prioridad media (default)
 - **alta**: Prioridad alta
-- **critica**: Prioridad crítica
+- **crítica**: Prioridad crítica
 
 ## Almacenamiento de Datos
 

@@ -20,7 +20,7 @@ class PrioridadCaso(Enum):
     BAJA = "baja"
     MEDIA = "media"
     ALTA = "alta"
-    CRITICA = "critica"
+    CRITICA = "crítica"
 
 
 @dataclass
