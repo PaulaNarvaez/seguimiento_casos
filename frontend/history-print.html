@@ -2,354 +2,219 @@
 <html lang="es">
 
 <head>
-    <meta charset="utf-8" />
-    <title>Historial (Imprimible)</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-        :root {
-            --text: #0b1224;
-            --accent: #0f766e;
-            --ok: #16a34a;
-            --bad: #dc2626;
-            --soft: #f1f5f9;
-            --line: #e2e8f0;
-        }
+  <meta charset="utf-8" />
+  <title>Historial (Imprimible por Hilos)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --text: #0b1224;
+      --line: #e2e8f0;
+      --soft: #f8fafc;
+    }
 
-        * {
-            box-sizing: border-box
-        }
+    * {
+      box-sizing: border-box
+    }
 
-        body {
-            margin: 0;
-            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
-            color: var(--text);
-            background: #fff
-        }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+      color: var(--text)
+    }
 
-        .wrap {
-            max-width: 1100px;
-            margin: 24px auto;
-            padding: 16px
-        }
+    .wrap {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 16px
+    }
 
-        .toolbar {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: end;
-            margin: 0 0 16px;
-            position: sticky;
-            top: 0;
-            background: #fff;
-            padding: 8px 0 12px;
-            border-bottom: 1px solid var(--line);
-        }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin: 0 0 16px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      padding: 8px 0 12px;
+      border-bottom: 1px solid var(--line)
+    }
 
-        .toolbar .block {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 180px
-        }
+    .toolbar .block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px
+    }
 
-        label {
-            font-size: 12px;
-            color: #475569
-        }
+    label {
+      font-size: 12px;
+      color: #475569
+    }
 
-        input,
-        select,
-        button {
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid var(--line);
-            background: #fff;
-            color: var(--text);
-            font-size: 14px;
-        }
+    input,
+    select,
+    button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 14px
+    }
 
-        button {
-            cursor: pointer;
-            font-weight: 600
-        }
+    button {
+      cursor: pointer;
+      font-weight: 600
+    }
 
-        .btn-accent {
-            background: #0ea5e9;
-            color: #002232;
-            border-color: #0284c7
-        }
+    .btn-accent {
+      background: #0ea5e9;
+      color: #002232;
+      border-color: #0284c7
+    }
 
-        .btn-outline {
-            background: #fff
-        }
+    h2 {
+      margin: 18px 0 6px
+    }
 
-        .title {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            margin: 6px 0 14px;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px
+    }
 
-        .title h1 {
-            font-size: 22px;
-            margin: 0
-        }
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      font-size: 13px;
+      vertical-align: top
+    }
 
-        .meta {
-            font-size: 12px;
-            color: #64748b
-        }
+    th {
+      background: var(--soft);
+      text-align: left
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px
-        }
+    .small {
+      font-size: 12px;
+      color: #64748b
+    }
 
-        th,
-        td {
-            border: 1px solid var(--line);
-            padding: 10px;
-            font-size: 13px;
-            vertical-align: top
-        }
+    .sep {
+      margin: 6px 0 14px
+    }
 
-        th {
-            background: var(--soft);
-            text-align: left;
-            white-space: nowrap
-        }
+    @media print {
+      .toolbar {
+        display: none
+      }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            border: 1px solid var(--line);
-            background: #fff
-        }
-
-        .ok {
-            color: #065f46;
-            border-color: #10b981;
-            background: #ecfdf5
-        }
-
-        .pendiente {
-            color: #991b1b;
-            border-color: #f87171;
-            background: #fef2f2
-        }
-
-        .escalado {
-            color: #1e40af;
-            border-color: #60a5fa;
-            background: #eff6ff
-        }
-
-        .nowrap {
-            white-space: nowrap
-        }
-
-        .center {
-            text-align: center
-        }
-
-        .small {
-            font-size: 12px
-        }
-
-        .sep {
-            margin: 8px 0 0;
-            color: #64748b
-        }
-
-        @media print {
-            .toolbar {
-                display: none
-            }
-
-            .wrap {
-                margin: 0 auto;
-                padding: 0
-            }
-
-            a[href]:after {
-                content: ""
-            }
-
-            th,
-            td {
-                border-color: #cbd5e1
-            }
-
-            .title {
-                margin: 0 0 8px
-            }
-        }
-    </style>
+      .wrap {
+        margin: 0 auto;
+        padding: 0
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="wrap">
-        <div class="title">
-            <h1>Historial de Cambios</h1>
-            <div class="meta" id="metaRange"></div>
-        </div>
-
-        <div class="toolbar">
-            <div class="block">
-                <label for="q">Buscar texto</label>
-                <input id="q" type="text" placeholder="Título, categoría, notas, acción...">
-            </div>
-            <div class="block">
-                <label for="caseId">ID de caso</label>
-                <input id="caseId" type="text" placeholder="Opcional">
-            </div>
-            <div class="block">
-                <label for="from">Desde (fecha)</label>
-                <input id="from" type="date">
-            </div>
-            <div class="block">
-                <label for="to">Hasta (fecha)</label>
-                <input id="to" type="date">
-            </div>
-            <div class="block">
-                <label for="estado">Estado resultante</label>
-                <select id="estado">
-                    <option value="">Todos</option>
-                    <option>Pendiente</option>
-                    <option>Escalado</option>
-                    <option>OK</option>
-                </select>
-            </div>
-            <div class="block">
-                <label>&nbsp;</label>
-                <button id="btnReload" class="btn-outline">Aplicar filtros</button>
-            </div>
-            <div class="block" style="margin-left:auto">
-                <label>&nbsp;</label>
-                <button id="btnPrint" class="btn-accent">Imprimir / Guardar PDF</button>
-            </div>
-        </div>
-
-        <table id="tbl">
-            <thead>
-                <tr>
-                    <th class="nowrap">Fecha</th>
-                    <th>Acción</th>
-                    <th>Case ID</th>
-                    <th>Título</th>
-                    <th>Categoría</th>
-                    <th>Estado</th>
-                    <th class="center">Escalado</th>
-                    <th>Notas</th>
-                </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-        </table>
-
-        <div class="small sep" id="countInfo"></div>
+  <div class="wrap">
+    <div class="toolbar">
+      <div class="block">
+        <label for="q">Buscar texto</label>
+        <input id="q" type="text" placeholder="Título, categoría, notas...">
+      </div>
+      <div class="block" style="margin-left:auto">
+        <label>&nbsp;</label>
+        <button id="btnPrint" class="btn-accent">Imprimir / Guardar PDF</button>
+      </div>
     </div>
 
-    <script>
-        const API = (p) => `/api${p}`;
-        const $ = (s) => document.querySelector(s);
+    <div id="content"></div>
+    <div class="small sep" id="countInfo"></div>
+  </div>
 
-        function fmtDate(iso) { return new Date(iso).toLocaleString(); }
-        function badgeEstado(estado) {
-            if (estado === 'OK') return '<span class="badge ok">OK</span>';
-            if (estado === 'Escalado') return '<span class="badge escalado">Escalado</span>';
-            return '<span class="badge pendiente">Pendiente</span>';
-        }
-        function text(v) { return (v == null ? '' : String(v)).trim(); }
+  <script>
+    const API = (p) => '/api' + p;
+    const $ = (s) => document.querySelector(s);
 
-        // Tomar snapshot legible (sin JSON crudo)
-        function viewFromHistoryItem(h) {
-            const snap = h.after ?? h.before ?? {};
-            return {
-                ts: h.timestamp,
-                action: h.action,
-                id: h.caseId,
-                titulo: snap.titulo ?? '',
-                categoria: snap.categoria ?? '',
-                estado: snap.estado ?? (h.action === 'DELETE' ? 'Pendiente' : ''),
-                escalado: !!snap.escalado,
-                notas: snap.notas ?? '',
-            };
-        }
+    function fmtDate(iso) { return new Date(iso).toLocaleString(); }
 
-        function passFilters(row, filters) {
-            if (filters.q) {
-                const q = filters.q.toLowerCase();
-                const hay = (row.titulo + ' ' + row.categoria + ' ' + row.notas + ' ' + row.action)
-                    .toLowerCase().includes(q);
-                if (!hay) return false;
-            }
-            if (filters.caseId && row.id !== filters.caseId) return false;
-            if (filters.estado && row.estado !== filters.estado) return false;
+    function groupByCaseId(items) {
+      const map = new Map();
+      for (const h of items) {
+        if (!map.has(h.caseId)) map.set(h.caseId, []);
+        map.get(h.caseId).push(h);
+      }
+      for (const [k, arr] of map) {
+        arr.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      }
+      return map;
+    }
 
-            const t = new Date(row.ts).getTime();
-            if (filters.from && t < filters.from) return false;
-            if (filters.to && t > filters.to) return false;
+    function titleFromEvents(events) {
+      // toma el último snapshot con título/categoría
+      for (let i = events.length - 1; i >= 0; i--) {
+        const snap = events[i].after ?? events[i].before;
+        if (snap && (snap.titulo || snap.categoria)) return { t: snap.titulo || '', c: snap.categoria || '' };
+      }
+      return { t: '', c: '' };
+    }
 
-            return true;
-        }
+    async function load() {
+      const q = $('#q').value.trim().toLowerCase();
+      const res = await fetch(API('/history'));
+      let data = await res.json();
 
-        function setMetaRange(from, to) {
-            const el = $('#metaRange');
-            if (!from && !to) { el.textContent = ''; return; }
-            const a = from ? new Date(from).toLocaleDateString() : '—';
-            const b = to ? new Date(to).toLocaleDateString() : '—';
-            el.textContent = `Filtro de fechas: ${a} → ${b}`;
-        }
+      if (q) {
+        const has = (obj) => JSON.stringify(obj || {}).toLowerCase().includes(q);
+        data = data.filter(h => (h.caseId || '').toLowerCase().includes(q) || has(h.after) || has(h.before));
+      }
 
-        async function cargar() {
-            const res = await fetch(API('/history'));
-            let data = await res.json();
+      const map = groupByCaseId(data);
+      const content = $('#content');
+      content.innerHTML = '';
 
-            const q = $('#q').value.trim();
-            const caseId = $('#caseId').value.trim();
-            const estado = $('#estado').value;
-            const fromStr = $('#from').value;
-            const toStr = $('#to').value;
-
-            const from = fromStr ? new Date(fromStr + 'T00:00:00').getTime() : null;
-            const to = toStr ? new Date(toStr + 'T23:59:59').getTime() : null;
-
-            const filters = { q, caseId, estado, from, to };
-            const rows = data.map(viewFromHistoryItem).filter(r => passFilters(r, filters));
-
-            const tb = $('#tbody');
-            tb.innerHTML = '';
-            rows.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-          <td class="nowrap">${fmtDate(r.ts)}</td>
-          <td>${r.action}</td>
-          <td>${r.id}</td>
-          <td>${r.titulo}</td>
-          <td>${r.categoria}</td>
-          <td>${badgeEstado(r.estado)}</td>
-          <td class="center">${r.escalado ? 'Sí' : 'No'}</td>
-          <td>${r.notas || ''}</td>
+      let total = 0;
+      for (const [caseId, events] of map) {
+        total += events.length;
+        const { t, c } = titleFromEvents(events);
+        const section = document.createElement('section');
+        section.innerHTML = `
+          <h2>Hilo — Case ID: ${caseId}</h2>
+          <div class="small">${t || ''} ${c ? ' · ' + c : ''}</div>
+          <table>
+            <thead>
+              <tr><th>Fecha</th><th>Acción</th><th>Título</th><th>Categoría</th><th>Estado</th><th>Notas</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         `;
-                tb.appendChild(tr);
-            });
-
-            document.getElementById('countInfo').textContent = `${rows.length} registro(s)`;
-            setMetaRange(from, to);
+        const tbody = section.querySelector('tbody');
+        for (const e of events) {
+          const snap = e.after ?? e.before ?? {};
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${fmtDate(e.timestamp)}</td>
+            <td>${e.action}</td>
+            <td>${snap.titulo || ''}</td>
+            <td>${snap.categoria || ''}</td>
+            <td>${snap.estado || ''}</td>
+            <td>${snap.notas || ''}</td>
+          `;
+          tbody.appendChild(tr);
         }
+        content.appendChild(section);
+      }
+      document.getElementById('countInfo').textContent = `${total} registro(s) en ${map.size} hilo(s)`;
+    }
 
-        document.getElementById('btnReload').addEventListener('click', cargar);
-        document.getElementById('btnPrint').addEventListener('click', () => window.print());
-        ['q', 'caseId', 'estado', 'from', 'to'].forEach(id => {
-            document.getElementById(id).addEventListener('change', cargar);
-            document.getElementById(id).addEventListener('input', cargar);
-        });
-
-        cargar();
-    </script>
+    document.getElementById('btnPrint').addEventListener('click', () => window.print());
+    document.getElementById('q').addEventListener('input', load);
+    load();
+  </script>
 </body>
 
 </html>

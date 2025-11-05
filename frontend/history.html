@@ -1,78 +1,241 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
-  <title>Historial de Cambios</title>
+  <title>Historial de Cambios (Agrupado por Case ID)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./styles.css">
+  <style>
+    .group {
+      background: #0b1224;
+      border: 1px solid #1b2436;
+      border-radius: 12px;
+      margin-bottom: 12px
+    }
+
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid #1b2436
+    }
+
+    .group-title {
+      font-weight: 600
+    }
+
+    .timeline {
+      padding: 8px 12px
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 180px 110px 1fr 140px 90px;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed #1f2a3a
+    }
+
+    .event:last-child {
+      border-bottom: none
+    }
+
+    .muted {
+      color: #93a3b8;
+      font-size: 12px
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #1f2a3a;
+      background: #0a1222;
+      font-size: 12px
+    }
+
+    .chip.ok {
+      color: #d1fae5;
+      background: rgba(22, 163, 74, .15);
+      border-color: rgba(22, 163, 74, .4)
+    }
+
+    .chip.pending {
+      color: #fee2e2;
+      background: rgba(220, 38, 38, .15);
+      border-color: rgba(220, 38, 38, .4)
+    }
+
+    .chip.escalado {
+      color: #c7d2fe;
+      background: rgba(59, 130, 246, .15);
+      border-color: rgba(59, 130, 246, .4)
+    }
+
+    .toolbar .link {
+      white-space: nowrap
+    }
+
+    .nowrap {
+      white-space: nowrap
+    }
+  </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Historial de Cambios</h1>
+      <h1>Historial</h1>
 
       <div class="toolbar">
-        <input id="q" type="text" placeholder="Buscar por ID de caso o texto...">
-        <button id="btnReload">Recargar</button>
+        <input id="q" type="text" placeholder="Buscar por texto...">
+        <button id="btnReload">Aplicar filtros</button>
         <a class="link" href="./index.html">« Volver a casos</a>
       </div>
 
-      <div class="thead" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
-        <div>Fecha</div>
-        <div>Acción</div>
-        <div>Case ID</div>
-        <div>Detalle</div>
-      </div>
-      <div id="rows" style="display: grid; gap: 10px;"></div>
+      <div id="container"></div>
     </div>
   </div>
 
   <script>
-    const API = (p) => `/api${p}`;
-    const $ = (s)=>document.querySelector(s);
+    const API = (p) => '/api' + p;
+    const $ = (s) => document.querySelector(s);
 
-    function fmtDate(iso){ const d = new Date(iso); return d.toLocaleString(); }
-    function stringify(obj){ try { return JSON.stringify(obj, null, 2); } catch { return String(obj); } }
+    function fmtDate(iso) { return new Date(iso).toLocaleString(); }
 
-    async function loadHistory(){
-      const q = $('#q').value.trim().toLowerCase();
+    function chipEstado(estado) {
+      if (estado === 'OK') return '<span class="chip ok">OK</span>';
+      if (estado === 'Escalado') return '<span class="chip escalado">Escalado</span>';
+      return '<span class="chip pending">Pendiente</span>';
+    }
+
+    function latestSnapshot(events) {
+      // último AFTER disponible (o BEFORE si fue DELETE)
+      for (let i = 0; i < events.length; i++) {
+        const e = events[i];
+        if (e.after) return e.after;
+      }
+      const del = events.find(e => e.action === 'DELETE' && e.before);
+      return del?.before || {};
+    }
+
+    function groupByCaseId(items) {
+      const map = new Map();
+      for (const h of items) {
+        if (!map.has(h.caseId)) map.set(h.caseId, []);
+        map.get(h.caseId).push(h);
+      }
+      // Ordenar cronológicamente descendente por grupo
+      for (const [k, arr] of map) {
+        arr.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      }
+      return map;
+    }
+
+    function renderThread(caseId, events) {
+      const cont = $('#container');
+      cont.innerHTML = '';
+
+      const header = document.createElement('div');
+      header.className = 'group';
+      const snap = latestSnapshot(events) || {};
+      header.innerHTML = `
+        <div class="group-header">
+          <div class="group-title">Hilo de Case ID: <code>${caseId}</code></div>
+          <div class="muted">${snap.titulo || ''} · ${snap.categoria || ''}</div>
+        </div>
+        <div class="timeline" id="tl"></div>
+      `;
+      cont.appendChild(header);
+
+      const tl = document.getElementById('tl');
+      events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // timeline asc
+      for (const e of events) {
+        const view = e.after ?? e.before ?? {};
+        const div = document.createElement('div');
+        div.className = 'event';
+        div.innerHTML = `
+          <div class="nowrap">${fmtDate(e.timestamp)}</div>
+          <div>${e.action}</div>
+          <div>${(view.titulo || '')} ${view.notas ? ' · ' + view.notas : ''}</div>
+          <div>${view.categoria || ''}</div>
+          <div class="nowrap">${view.estado ? chipEstado(view.estado) : ''}</div>
+        `;
+        tl.appendChild(div);
+      }
+    }
+
+    function renderGrouped(map) {
+      const cont = $('#container');
+      cont.innerHTML = '';
+      for (const [caseId, events] of map) {
+        const snap = latestSnapshot(events) || {};
+        const group = document.createElement('details');
+        group.className = 'group';
+        group.open = false;
+
+        group.innerHTML = `
+          <summary class="group-header">
+            <div>
+              <div class="group-title">Case ID: <code>${caseId}</code></div>
+              <div class="muted">${snap.titulo || ''} · ${snap.categoria || ''}</div>
+            </div>
+            <div>
+              <a class="link" href="./history.html?caseId=${caseId}" target="_blank">Abrir hilo »</a>
+            </div>
+          </summary>
+          <div class="timeline"></div>
+        `;
+        cont.appendChild(group);
+
+        const tl = group.querySelector('.timeline');
+        // mostrar últimos N eventos (o todos, aquí todos)
+        const sorted = [...events].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        for (const e of sorted) {
+          const view = e.after ?? e.before ?? {};
+          const div = document.createElement('div');
+          div.className = 'event';
+          div.innerHTML = `
+            <div class="nowrap">${fmtDate(e.timestamp)}</div>
+            <div>${e.action}</div>
+            <div>${(view.titulo || '')} ${view.notas ? ' · ' + view.notas : ''}</div>
+            <div>${view.categoria || ''}</div>
+            <div class="nowrap">${view.estado ? chipEstado(view.estado) : ''}</div>
+          `;
+          tl.appendChild(div);
+        }
+      }
+    }
+
+    async function load() {
+      const params = new URLSearchParams(location.search);
+      const caseIdParam = params.get('caseId');
+      const q = document.getElementById('q').value.trim().toLowerCase();
+
       const res = await fetch(API('/history'));
       let data = await res.json();
 
-      if (q){
-        data = data.filter(h =>
-          (h.caseId || '').toLowerCase().includes(q) ||
-          (h.action || '').toLowerCase().includes(q) ||
-          stringify(h.before).toLowerCase().includes(q) ||
-          stringify(h.after).toLowerCase().includes(q)
-        );
+      // filtro por texto simple sobre after/before
+      if (q) {
+        const matches = (obj) => JSON.stringify(obj || {}).toLowerCase().includes(q);
+        data = data.filter(h => (h.caseId || '').toLowerCase().includes(q) || matches(h.after) || matches(h.before));
       }
 
-      const container = $('#rows');
-      container.innerHTML = '';
-      data.forEach(h=>{
-        const row = document.createElement('div');
-        row.className = 'row';
-        row.style.gridTemplateColumns = '1fr 1fr 1fr 1fr';
-        row.innerHTML = `
-          <div class="td">${fmtDate(h.timestamp)}</div>
-          <div class="td"><span class="badge">${h.action}</span></div>
-          <div class="td"><code>${h.caseId}</code></div>
-          <div class="td">
-            <details>
-              <summary>Ver cambios</summary>
-              <pre style="white-space:pre-wrap;font-size:12px;margin-top:8px"><strong>Antes:</strong>\n${stringify(h.before)}</pre>
-              <pre style="white-space:pre-wrap;font-size:12px;margin-top:8px"><strong>Después:</strong>\n${stringify(h.after)}</pre>
-            </details>
-          </div>
-        `;
-        container.appendChild(row);
-      });
+      if (caseIdParam) {
+        const thread = data.filter(h => h.caseId === caseIdParam);
+        renderThread(caseIdParam, thread);
+      } else {
+        const map = groupByCaseId(data);
+        renderGrouped(map);
+      }
     }
 
-    $('#btnReload').addEventListener('click', loadHistory);
-    $('#q').addEventListener('input', loadHistory);
-    loadHistory();
+    document.getElementById('btnReload').addEventListener('click', load);
+    document.getElementById('q').addEventListener('input', load);
+    load();
   </script>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-// app.js - UI con SLA 2h, estado editable y precedencia correcta (ESTADO manda)
+// app.js - UI con SLA 2h, estado editable y link al HILO por Case ID
 const API = (p) => `/api${p}`;
 const $ = (s)=>document.querySelector(s);
 const rows = $('#rows');
@@ -50,9 +50,13 @@ async function listar(){
 
     const row = document.createElement('div');
     row.className = 'row';
+    row.style.gridTemplateColumns = '40px 1.2fr .9fr .8fr 1.2fr .8fr 1.1fr .8fr';
     row.innerHTML = `
       <div class="td"><div class="idbadge">${String(i+1).padStart(2,'0')}</div></div>
-      <div class="td"><input data-k="titulo" data-id="${c.id}" type="text" value="${escapeHtml(c.titulo)}"></div>
+      <div class="td">
+        <input data-k="titulo" data-id="${c.id}" type="text" value="${escapeHtml(c.titulo)}">
+        <div style="margin-top:6px;font-size:12px"><a class="link" href="./history.html?caseId=${c.id}" target="_blank">Ver hilo »</a></div>
+      </div>
       <div class="td"><input data-k="categoria" data-id="${c.id}" type="text" value="${escapeHtml(c.categoria||'')}"></div>
       <div class="td">
         <select data-k="escalado" data-id="${c.id}">
@@ -92,7 +96,7 @@ async function agregar(){
   const titulo = $('#titulo').value.trim();
   const categoria = $('#categoria').value.trim();
   const escalado = $('#escalado').value === 'si';
-  const estado = $('#estado').value; // Escalado aquí arranca SLA
+  const estado = $('#estado').value;
   const notas = $('#notas').value.trim();
 
   if (!titulo){ alert('El título es obligatorio'); return; }
@@ -109,7 +113,6 @@ async function agregar(){
 }
 
 async function actualizar(id){
-  // leer valores de la fila
   const inputs = rows.querySelectorAll(`[data-id="${id}"]`);
   const payload = {};
   let estadoElegido = null;
@@ -117,37 +120,31 @@ async function actualizar(id){
   inputs.forEach(el=>{
     const k = el.getAttribute('data-k');
     if (k === 'estado') {
-      estadoElegido = el.value;                // Pendiente | Escalado | OK
+      estadoElegido = el.value;
       payload.estado = estadoElegido;
     } else if (k === 'escalado') {
-      payload.escalado = (el.value === 'si');  // boolean para sincronía
+      payload.escalado = (el.value === 'si');
     } else {
       payload[k] = el.value;
     }
   });
 
-  // PRECEDENCIA: el ESTADO manda sobre "escalado"
+  // Precedencia: ESTADO manda
   if (estadoElegido === 'Escalado') {
-    payload.escalado = true;          // inicia/reinicia SLA
-    payload.estado = 'Escalado';
+    payload.escalado = true;
   } else if (estadoElegido === 'OK' || estadoElegido === 'Pendiente') {
-    payload.escalado = false;         // salir de Escalado apaga SLA
-    payload.estado = estadoElegido;
-  } else {
-    // Si no eligió estado pero puso escalado = sí, escalamos
-    if (payload.escalado) payload.estado = 'Escalado';
+    payload.escalado = false;
+  } else if (payload.escalado) {
+    payload.estado = 'Escalado';
   }
 
   const res = await fetch(API(`/cases/${id}`), {
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
   });
   if (!res.ok){
     const err = await res.json().catch(()=>({})); alert('Error al actualizar: ' + (err.error || res.status)); return;
   }
-  await cargarCategorias();
-  await listar();
+  await cargarCategorias(); await listar();
 }
 
 async function borrar(id){
@@ -156,29 +153,24 @@ async function borrar(id){
   if (!res.ok){
     const err = await res.json().catch(()=>({})); alert('Error al borrar: ' + (err.error || res.status)); return;
   }
-  await cargarCategorias();
-  await listar();
+  await cargarCategorias(); await listar();
 }
 
-// --- Sincronía visual entre selects de la fila ---
+// sincronía visual
 rows.addEventListener('change', (e)=>{
   const el = e.target;
   if (!el.matches('select[data-k]')) return;
   const id = el.getAttribute('data-id');
-
-  // cuando cambia ESTADO, actualiza "Escalado: Sí/No"
   if (el.getAttribute('data-k') === 'estado') {
     const esc = rows.querySelector(`select[data-k="escalado"][data-id="${id}"]`);
     if (esc) esc.value = (el.value === 'Escalado') ? 'si' : 'no';
   }
-  // cuando cambia Escalado, si elige "Sí" y estado no está en Escalado, muévelo
   if (el.getAttribute('data-k') === 'escalado') {
     const est = rows.querySelector(`select[data-k="estado"][data-id="${id}"]`);
     if (est && el.value === 'si') est.value = 'Escalado';
   }
 });
 
-// Filtros y acciones
 $('#btnAdd').addEventListener('click', agregar);
 $('#btnReset').addEventListener('click', async ()=>{
   $('#q').value = ''; $('#fCategoria').value = 'Todas'; $('#fEstado').value = 'Todos'; $('#fEscalado').value = 'Todos';
@@ -193,8 +185,5 @@ rows.addEventListener('click', async (e)=>{
   if (act === 'borrar') await borrar(id);
 });
 
-// Auto-refresco del countdown cada 15s
 setInterval(listar, 15 * 1000);
-
-// Init
 (async function init(){ await cargarCategorias(); await listar(); })();

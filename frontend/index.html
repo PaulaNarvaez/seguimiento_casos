@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8" />
   <title>Seguimiento de Casos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
@@ -33,7 +35,9 @@
       <!-- Filtros -->
       <div class="toolbar">
         <input id="q" type="text" placeholder="Buscar por texto...">
-        <select id="fCategoria"><option value="Todas">Todas las categorías</option></select>
+        <select id="fCategoria">
+          <option value="Todas">Todas las categorías</option>
+        </select>
         <select id="fEstado">
           <option>Todos</option>
           <option>Pendiente</option>
@@ -54,7 +58,7 @@
       </div>
 
       <!-- Cabecera -->
-      <div class="thead">
+      <div class="thead" style="grid-template-columns:40px 1.2fr .9fr .8fr 1.2fr .8fr 1.1fr .8fr;">
         <div>#</div>
         <div>Caso</div>
         <div>Categoría</div>
@@ -70,4 +74,5 @@
 
   <script src="./app.js"></script>
 </body>
+
 </html>
