@@ -51,37 +51,6 @@
     "meta": {}
   },
   {
-    "id": "1762357058892-i7grca",
-    "timestamp": "2025-11-05T15:37:38.892Z",
-    "action": "UPDATE",
-    "caseId": "CASE0001",
-    "before": {
-      "id": "CASE0001",
-      "titulo": "SANTO DOMINGO SIN INTERNET",
-      "categoria": "TELECOMUNICACIONES",
-      "escalado": true,
-      "estado": "Escalado",
-      "notas": "PISO 8",
-      "slaHours": 2,
-      "escaladoUntil": "2025-11-05T17:37:37.564Z",
-      "creadoEn": "2025-11-05T15:37:24.160Z",
-      "actualizadoEn": "2025-11-05T15:37:37.564Z"
-    },
-    "after": {
-      "id": "CASE0001",
-      "titulo": "SANTO DOMINGO SIN INTERNET",
-      "categoria": "TELECOMUNICACIONES",
-      "escalado": true,
-      "estado": "Escalado",
-      "notas": "PISO 8",
-      "slaHours": 2,
-      "escaladoUntil": "2025-11-05T17:37:38.889Z",
-      "creadoEn": "2025-11-05T15:37:24.160Z",
-      "actualizadoEn": "2025-11-05T15:37:38.889Z"
-    },
-    "meta": {}
-  },
-  {
     "id": "1762364263964-941t3h",
     "timestamp": "2025-11-05T17:37:43.964Z",
     "action": "SLA_AUTO",
