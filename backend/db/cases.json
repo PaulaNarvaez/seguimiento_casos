@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "CASE0001",
+    "titulo": "SANTO DOMINGO SIN INTERNET",
+    "categoria": "TELECOMUNICACIONES",
+    "escalado": false,
+    "estado": "Pendiente",
+    "notas": "PISO 8",
+    "slaHours": null,
+    "escaladoUntil": null,
+    "creadoEn": "2025-11-05T15:37:24.160Z",
+    "actualizadoEn": "2025-11-05T17:37:43.963Z"
+  }
+]
